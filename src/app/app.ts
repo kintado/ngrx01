@@ -1,12 +1,14 @@
 import { Component, signal } from '@angular/core';
-
+import { FormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { increment, decrement } from './ngrx/contatore/counter.actions';
 import { Test } from "./test/test";
+import { updateMessage } from './ngrx/contatore/message.actions';
+import { Test2 } from "./test2/test2";
 
 @Component({
   selector: 'app-root',
-  imports: [Test],
+  imports: [Test, FormsModule, Test2],
   template: `
     <h1>{{ title }}</h1>
    
@@ -15,6 +17,12 @@ import { Test } from "./test/test";
     <p [style.color]="color">Contatore: {{ valoreArrivatoDalloStore() }}</p>
     <hr>
     <test></test>
+    <hr>
+    <div>{{ testo() }}</div>
+    <textarea [(ngModel)]="miatextarea" placeholder="Scrivi qualcosa..." (change)="updateMessage()"></textarea>
+
+    <hr>
+    <test2></test2>
     `,
   styleUrl: './app.css'
 })
@@ -22,7 +30,11 @@ export class App {
   protected title = 'counter01';
   valoreArrivatoDalloStore = signal(0);
   color: string = 'red';
-  constructor(private store: Store<{ mycounter: number }>) {
+  miatextarea: string = '';
+
+  testo = signal(''); // questo è un esempio di signal, ma non lo usiamo in questo esempio.
+
+  constructor(private store: Store<{ mycounter: number, mess: string }>) {
 
      /*
      Stiamo injectando il servizio store di NgRX...
@@ -37,16 +49,19 @@ export class App {
       Quindi qui lo dichiariamo direttamente come un numero.
      */
      // ora gli dobbiamo direr cosa fare quando cambia lo stato globale di NgRX.
-     this.store.select('mycounter').subscribe((state) => {
+     this.store.select((state) => state.mycounter).subscribe((state) => {
       if (state % 2 === 0) {
         this.color = 'green';
       } else {
         this.color = 'red';   
       }
-      this.valoreArrivatoDalloStore.set(state*2);
-      
+      this.valoreArrivatoDalloStore.set(state * 2);
 
      // alert(`Lo stato globale di NgRX è cambiato: ${state}`);
+    });
+
+    this.store.select((state) => state.mess).subscribe((state) => {
+      this.testo.set(state);
     });
   }
 
@@ -62,5 +77,9 @@ export class App {
     // quando clicco il bottone decrement, chiamo l'azione decrement che abbiamo definito in counter.actions.ts
     // questa azione farà scattare il reducer counterReducer che cambierà lo stato globale di NgRX.
   }
+
+updateMessage() {
+   this.store.dispatch(updateMessage({ message: this.miatextarea }));
+}
 
 }
