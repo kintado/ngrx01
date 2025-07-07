@@ -4,17 +4,21 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideStore } from '@ngrx/store';
-import { counterReducer } from './ngrx/contatore/counter.reducer';
-import { messageReducer } from './ngrx/contatore/message.reducer';
+
+import { provideHttpClient } from '@angular/common/http';
+import { provideEffects } from '@ngrx/effects';
+import { MessageEffects } from './ngrx/effetcs/caricamento_messaggi/message.effect';
+import { MessageService } from './ngrx/effetcs/caricamento_messaggi/message.service';
+import { messageReducer } from './ngrx/redux/messaggi/messgae.reducer';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
+    provideHttpClient(),
     provideRouter(routes), provideClientHydration(withEventReplay()),
-    provideStore({ mycounter: counterReducer, mess: messageReducer })// qui dentro metterò lo stato globale di ngrx che può cambiare in base alle azioni.
-    /* Serve un reducer, che è quello che gestisce lo stato (cambia lo stato in base alle azioni)
-       e le azioni, che sono gli eventi che possono far scattare il reducer e cambiare lo stato
-       */
+    provideStore({ message: messageReducer }),
+    provideEffects([MessageEffects]),
+    MessageService
   ]
 };
